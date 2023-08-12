@@ -10,6 +10,10 @@ TEST(TestParcing, BasicAssertions) {
   QByteArray in = "\n1234\n12345\n123456\n\n\n8\n";
   SerialSvc svc(nullptr);
   EXPECT_EQ( svc.parceIn(in), 4);
+  EXPECT_STREQ( svc.reads[0].toLocal8Bit(), "1234");
+  EXPECT_STREQ( svc.reads[1].toLocal8Bit(), "12345");
+  EXPECT_STREQ( svc.reads[2].toLocal8Bit(), "123456");
+  EXPECT_STREQ( svc.reads[3].toLocal8Bit(), "8");
 }
 
 TEST(TestRun, BasicAssertions) {
