@@ -3,7 +3,16 @@
 #include <QStringList>
 #include "serialsvc.h"
 // Demonstrate some basic assertions.
-TEST(Test, BasicAssertions) {
+
+
+TEST(TestParcing, BasicAssertions) {
+  // Expect two strings not to be equal.
+  QByteArray in = "\n1234\n12345\n123456\n\n\n8\n";
+  SerialSvc svc(nullptr);
+  EXPECT_EQ( svc.parceIn(in), 4);
+}
+
+TEST(TestRun, BasicAssertions) {
   // Expect two strings not to be equal.
   EXPECT_STRNE("hello", "world");
   // Expect equality.
@@ -21,4 +30,3 @@ TEST(Test, BasicAssertions) {
   EXPECT_EQ( ser2udp(argc, argv), 10);
 //  EXPECT_STREQ("test", "test");
 }
-
