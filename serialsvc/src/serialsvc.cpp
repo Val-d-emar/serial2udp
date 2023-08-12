@@ -6,12 +6,19 @@
 #include <QObject>
 #include <QRegularExpression>
 #include <QTimer>
+#include "message.h"
 
 
 void SerialSvc::readStr()
 {
     QByteArray in = readAll();
     parceIn(in);
+}
+
+void SerialSvc::doEncript(QString data)
+{
+    QByteArray enc = Message(data).encrypt();
+    udpSocket->writeDatagram(enc, QHostAddress::Broadcast, port);
 }
 
 int SerialSvc::parceIn(QByteArray in)
@@ -24,6 +31,7 @@ int SerialSvc::parceIn(QByteArray in)
                 buff.append(in.left(n));
             if (buff.size()>0){
                 reads.append(buff);
+                emit onCompleted(reads.last());
                 i++;
                 buff.clear();
             }
@@ -33,16 +41,14 @@ int SerialSvc::parceIn(QByteArray in)
             else break;
             n = in.indexOf('\n',0);
         }
-        return i;
-
     }else if (isTimeOut()){
         buff.append(in);
         if (buff.size() > 0){
             reads.append(buff);
+            emit onCompleted(reads.last());
             i++;
         }
         buff.clear();
-        return 1;
     } else {
         buff.append(in);
     }
@@ -92,12 +98,15 @@ void SerialSvc::startTime()
 }
 
 SerialSvc::SerialSvc(QObject *parent)
-    :timer(new QTimer(parent))
+    :QSerialPort(parent)
+    ,port(64000)
+    ,timer(new QTimer(parent))
+    ,udpSocket(new QUdpSocket(parent))
     ,counter(0)
     ,maxtime(5)
-
 {
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
+    connect(this, SIGNAL(onCompleted(QString)), this, SLOT(doEncript(QString)));
 }
 
 void SerialSvc::openSerialPort(QString name)

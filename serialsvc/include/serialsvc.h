@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QTimer>
 #include <QtSerialPort/QSerialPort>
+#include <QUdpSocket>
 
 class SerialSvc : public QSerialPort
 {
@@ -17,13 +18,17 @@ public:
     QStringList reads;
     bool isTimeOut();
     void startTime();
-//signals:
+    uint port;
+signals:
+    void onCompleted(QString data);
 public slots:
     void onTimer();
     void readStr();
+    void doEncript(QString data);
 
 protected:
     QTimer *timer;
+    QUdpSocket *udpSocket;
     uint counter;
     uint maxtime;
     QByteArray buff;
