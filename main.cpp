@@ -1,9 +1,11 @@
-#include <iostream>
-#include serialsvc/include/serialsvc.h
+#include <QDebug>
+#include <QtGui/QGuiApplication>
 
-int main(){
-    serialsvc u;
-    std::cout<< "test" << std::endl;
-    return 0;
+#include "serialsvc.h"
+
+int main(int argc, char** argv){
+
+    QCoreApplication a(argc, argv);
+    return ser2udp(argc, argv);
+    return a.exec();
 }
-

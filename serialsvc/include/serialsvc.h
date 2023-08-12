@@ -11,6 +11,7 @@ class serialsvc{
     private:
 
 };
+int ser2udp(int argc, char** argv);
 
 #endif
 
