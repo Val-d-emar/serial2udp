@@ -18,7 +18,16 @@ void SerialSvc::readStr()
 void SerialSvc::doEncript(QString data)
 {
     QByteArray enc = Message(data).encrypt();
-    udpSocket->writeDatagram(enc, QHostAddress::Broadcast, port);
+    udpSocket->writeDatagram(enc, QHostAddress::Broadcast, portUDP);
+}
+
+void SerialSvc::doReadUDP()
+{
+    while (udpSocket->hasPendingDatagrams()) {
+        datagram.resize(int(udpSocket->pendingDatagramSize()));
+        udpSocket->readDatagram(datagram.data(), datagram.size());
+        qDebug() << "Received datagram:" << datagram.constData();
+    }
 }
 
 int SerialSvc::parceIn(QByteArray in)
@@ -63,15 +72,12 @@ void SerialSvc::onTimer()
 
 int ser2udp(int argc, char** argv){
 
-    if ((argc>1) && 0 == qstrcmp(argv[1], "--test")){
-        qDebug() << "if --test";
+    if ((argc>2)){
+        qDebug() << argv[0] << argv[1] << argv[2];
         return 20;
     }else{
-         qDebug() << "else";
-         QByteArray in = "\n1234\n12345\n123456\n\n\n8\n";
-         SerialSvc svc(nullptr);
-         qDebug() << svc.parceIn(in);
-         qDebug() << svc.reads;
+         qDebug() << "Usage:";
+         qDebug() << "      " << QCoreApplication::applicationName().toStdString().c_str() << "/dev/serialX udpPort" ;
          return 10;
         }
 }
@@ -97,16 +103,18 @@ void SerialSvc::startTime()
     timer->start(1000);
 }
 
-SerialSvc::SerialSvc(QObject *parent)
+SerialSvc::SerialSvc(uint UDPport, QObject *parent)
     :QSerialPort(parent)
-    ,port(64000)
     ,timer(new QTimer(parent))
     ,udpSocket(new QUdpSocket(parent))
     ,counter(0)
     ,maxtime(5)
 {
+    portUDP = UDPport;
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
     connect(this, SIGNAL(onCompleted(QString)), this, SLOT(doEncript(QString)));
+    udpSocket->bind(portUDP, QUdpSocket::ShareAddress);
+    connect(udpSocket, SIGNAL(readyRead()), this,SLOT(doReadUDP()));
 }
 
 void SerialSvc::openSerialPort(QString name)

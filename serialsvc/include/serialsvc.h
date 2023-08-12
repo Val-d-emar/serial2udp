@@ -11,20 +11,22 @@ class SerialSvc : public QSerialPort
 {
     Q_OBJECT
 public:
-    explicit SerialSvc(QObject *parent = nullptr);
     void openSerialPort(QString name);
     void closeSerialPort();
     int parceIn(QByteArray in);
     QStringList reads;
     bool isTimeOut();
     void startTime();
-    uint port;
+    uint portUDP;
+    QByteArray datagram;
+    SerialSvc(uint UDPport = 64000, QObject *parent = nullptr);
 signals:
     void onCompleted(QString data);
 public slots:
     void onTimer();
     void readStr();
     void doEncript(QString data);
+    void doReadUDP();
 
 protected:
     QTimer *timer;
