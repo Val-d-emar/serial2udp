@@ -45,10 +45,11 @@ TEST(TestHelp, BasicAssertions) {
 }
 
 TEST(TestComm, BasicAssertions) {
-  // for this test you need using null-modem cross cable
-  // or run socat loopback like me
+  // for pass this test you need using null-modem cross cable
+  // or run socat loopback like me in Linux:
+  //# socat -d -d pty,raw,echo=0 pty,raw,echo=0
   QString outTTY("/dev/pts/7");
-  QString inTTY("/dev/pts/6");
+  QString inTTY("/dev/pts/8");
   QString testdata = "12345678";
 
   char ** argv = new char*[3];

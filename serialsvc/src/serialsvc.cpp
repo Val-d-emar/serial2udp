@@ -13,6 +13,7 @@
 void SerialSvc::readStr()
 {
     QByteArray in = readAll();
+    startTime();
     parceIn(in);
     qDebug() << "Received serial data:" << in;
 }
@@ -69,8 +70,11 @@ int SerialSvc::parceIn(QByteArray in)
 
 void SerialSvc::onTimer()
 {
-    if (++counter >= maxtime)
+    if (++counter >= maxtime){
       timer->stop();
+//      emit readyRead();
+      parceIn(QByteArray());
+    }
 }
 
 int ser2udp(int argc, char** argv){
@@ -135,6 +139,7 @@ SerialSvc::SerialSvc(uint UDPport, QString TTYname, QObject *parent)
     portUDP = UDPport;
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
     connect(this, SIGNAL(onCompleted(QString)), this, SLOT(doEncript(QString)));
+    connect(this, SIGNAL(onCompleted(QString)), this, SLOT(startTime()));
     udpSocket->bind(portUDP, QUdpSocket::ShareAddress);
     connect(udpSocket, SIGNAL(readyRead()), this,SLOT(doReadUDP()));
     openSerialPort(TTYname);

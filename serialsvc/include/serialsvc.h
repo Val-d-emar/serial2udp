@@ -16,7 +16,6 @@ public:
     int parceIn(QByteArray in);
     QStringList reads;
     bool isTimeOut();
-    void startTime();
     uint portUDP;
     QByteArray datagram;
     SerialSvc(uint UDPport = 64000, QString TTYname = "/dev/serial", QObject *parent = nullptr);
@@ -27,6 +26,7 @@ public slots:
     void readStr();
     void doEncript(QString data);
     void doReadUDP();
+    void startTime();
 
 protected:
     QTimer *timer;
