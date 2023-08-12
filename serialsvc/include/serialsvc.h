@@ -11,7 +11,7 @@ class SerialSvc : public QSerialPort
 {
     Q_OBJECT
 public:
-    void openSerialPort(QString name);
+    void openSerialPort(QString TTYname );
     void closeSerialPort();
     int parceIn(QByteArray in);
     QStringList reads;
@@ -19,7 +19,7 @@ public:
     void startTime();
     uint portUDP;
     QByteArray datagram;
-    SerialSvc(uint UDPport = 64000, QObject *parent = nullptr);
+    SerialSvc(uint UDPport = 64000, QString TTYname = "/dev/serial", QObject *parent = nullptr);
 signals:
     void onCompleted(QString data);
 public slots:

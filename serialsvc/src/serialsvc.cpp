@@ -7,18 +7,21 @@
 #include <QRegularExpression>
 #include <QTimer>
 #include "message.h"
+#include <unistd.h>
 
 
 void SerialSvc::readStr()
 {
     QByteArray in = readAll();
     parceIn(in);
+    qDebug() << "Received serial data:" << in;
 }
 
 void SerialSvc::doEncript(QString data)
 {
     QByteArray enc = Message(data).encrypt();
     udpSocket->writeDatagram(enc, QHostAddress::Broadcast, portUDP);
+    qDebug() << "Send broadcast:" << enc << "port" << portUDP;
 }
 
 void SerialSvc::doReadUDP()
@@ -73,13 +76,32 @@ void SerialSvc::onTimer()
 int ser2udp(int argc, char** argv){
 
     if ((argc>2)){
-        qDebug() << argv[0] << argv[1] << argv[2];
-        return 20;
+        QString portUDP(argv[2]);
+        QString portTTY(argv[1]);
+        bool ok = false;
+        uint pUDP = portUDP.toUInt(&ok);
+        if (ok){
+           SerialSvc serial(pUDP, portTTY, QCoreApplication::instance());
+           for (int i=0; i<=6000; i++){
+               QCoreApplication::instance()->processEvents();
+               if (serial.reads.size() >= 10) {
+                   usleep(300000);
+                   break;
+               }
+               usleep(100000);
+           }
+
+        } else {
+            qDebug() << "Usage:";
+            qDebug() << "      " << QCoreApplication::applicationName().toStdString().c_str() << "/dev/serialX udpPort" ;
+            return 20;
+        }
     }else{
          qDebug() << "Usage:";
          qDebug() << "      " << QCoreApplication::applicationName().toStdString().c_str() << "/dev/serialX udpPort" ;
          return 10;
         }
+    return 0;
 }
 
 void SerialSvc::closeSerialPort()
@@ -103,7 +125,7 @@ void SerialSvc::startTime()
     timer->start(1000);
 }
 
-SerialSvc::SerialSvc(uint UDPport, QObject *parent)
+SerialSvc::SerialSvc(uint UDPport, QString TTYname, QObject *parent)
     :QSerialPort(parent)
     ,timer(new QTimer(parent))
     ,udpSocket(new QUdpSocket(parent))
@@ -115,13 +137,14 @@ SerialSvc::SerialSvc(uint UDPport, QObject *parent)
     connect(this, SIGNAL(onCompleted(QString)), this, SLOT(doEncript(QString)));
     udpSocket->bind(portUDP, QUdpSocket::ShareAddress);
     connect(udpSocket, SIGNAL(readyRead()), this,SLOT(doReadUDP()));
+    openSerialPort(TTYname);
 }
 
-void SerialSvc::openSerialPort(QString name)
+void SerialSvc::openSerialPort(QString TTYname)
 
 {
     closeSerialPort();
-    setPortName(name);
+    setPortName(TTYname);
     reads.clear();
 //    setBaudRate(baudRate);
 //    setDataBits(dataBits);
@@ -129,11 +152,11 @@ void SerialSvc::openSerialPort(QString name)
 //    setStopBits(stopBits);
 //    setFlowControl(flowControl);
     if (open(QIODevice::ReadOnly)) {
-        qDebug() << tr("Connected to serial ") << portName();
+        qDebug() << tr("Connected to serial") << portName();
         startTime();
         connect(this, SIGNAL(readyRead()), this, SLOT(readStr()));
     } else {
-        qDebug() << tr("Error open serial ") << errorString();
+        qDebug() << tr("Error open serial") << errorString();
     }
 
 }

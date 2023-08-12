@@ -4,8 +4,7 @@
 #include "serialsvc.h"
 
 int main(int argc, char** argv){
-
     QCoreApplication a(argc, argv);
-    return ser2udp(argc, argv);
-    return a.exec();
+    int res = ser2udp(argc, argv);
+    return res;
 }

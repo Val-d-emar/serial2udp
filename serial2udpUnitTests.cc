@@ -38,12 +38,23 @@ TEST(TestBroadcasting, BasicAssertions) {
   }
   EXPECT_STREQ( svc.datagram, "HELLO23456789");
 }
+TEST(TestHelp, BasicAssertions) {
+  char ** argv = new char*[3];
+  int argc = 1;
+  EXPECT_EQ( ser2udp(argc, argv), 10);
+}
 
-TEST(TestRun, BasicAssertions) {
+TEST(TestComm, BasicAssertions) {
+  // for this test you need using null-modem cross cable
+  // or run socat loopback like me
+  QString outTTY("/dev/pts/7");
+  QString inTTY("/dev/pts/6");
+  QString testdata = "12345678";
+
   char ** argv = new char*[3];
   QString ar0("proga");
-  QString ar1("/dev/serial0");
-  QString ar2("64000");
+  QString ar1 = inTTY;
+  QString ar2("45454");
   QByteArray bar = ar1.toLatin1();
   char *str=(char *)malloc(bar.size()+1);
   strncpy(str, bar.data(), bar.size());
@@ -57,8 +68,19 @@ TEST(TestRun, BasicAssertions) {
   strncpy(str, bar.data(), bar.size());
   argv[0] = str;
   EXPECT_EQ( 10, 10);
-  int argc = 1;
-  EXPECT_EQ( ser2udp(argc, argv), 10);
-  argc = 3;
-  EXPECT_EQ( ser2udp(argc, argv), 20);
+  int argc = 3;
+  QCoreApplication a(argc, argv);
+  SerialSvc svc(ar2.toUInt(), ar1, &a);
+  QString CMD = QString("echo \"%1\" > %2")
+          .arg(testdata)
+          .arg(outTTY);
+  for (int i=0; i<=6000; i++){
+      std::system(CMD.toStdString().c_str());
+      a.processEvents();
+      if (svc.datagram.size() > 0) {
+          break;
+      }
+      usleep(100000);
+  }
+  EXPECT_STREQ( svc.datagram, "HELLO23456789");
 }
