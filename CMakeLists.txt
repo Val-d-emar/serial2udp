@@ -15,33 +15,27 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED Network SerialPort)
 
 add_subdirectory(serialsvc)
 
-#file(GLOB SOURCES
-#    *.cpp
-#)
-#file(GLOB HEADERS
-#    *.h
-#    )
-#file(GLOB QT_RESOURCES
-#    *.qrc
-#    )
-
-set(SOURCES
-    main.cpp
-)
-set(HEADERS
-    main.h
+file(GLOB SOURCES
+    *.cpp
     )
-#set(QT_RESOURCES
-#    res.qrc
-#    )
+file(GLOB HEADERS
+    *.h
+    )
+file(GLOB QT_RESOURCES
+    *.qrc
+    )
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${QT_RESOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME}
+    ${SOURCES}
+    ${QT_RESOURCES}
+    ${HEADERS}
+    )
 target_include_directories(${PROJECT_NAME} PRIVATE ${Qt6Core_INCLUDE_DIRS} ${Qt6Quick_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Network
-    serialsvc
     Qt${QT_VERSION_MAJOR}::SerialPort
+    serialsvc    
     )
 
 include(FetchContent)
@@ -64,6 +58,7 @@ target_link_libraries(
   GTest::gtest_main
   Qt${QT_VERSION_MAJOR}::Core
   Qt${QT_VERSION_MAJOR}::Network
+  Qt${QT_VERSION_MAJOR}::SerialPort
   serialsvc
 )
 

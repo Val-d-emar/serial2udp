@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QRegularExpression>
 #include <QTimer>
+#include <signal.h>
 #include "message.h"
 #include <unistd.h>
 
@@ -77,36 +78,6 @@ void SerialSvc::onTimer()
     }
 }
 
-int ser2udp(int argc, char** argv){
-
-    if ((argc>2)){
-        QString portUDP(argv[2]);
-        QString portTTY(argv[1]);
-        bool ok = false;
-        uint pUDP = portUDP.toUInt(&ok);
-        if (ok){
-           SerialSvc serial(pUDP, portTTY, QCoreApplication::instance());
-           for (int i=0; i<=6000; i++){
-               QCoreApplication::instance()->processEvents();
-               if (serial.reads.size() >= 10) {
-                   usleep(300000);
-                   break;
-               }
-               usleep(100000);
-           }
-
-        } else {
-            qDebug() << "Usage:";
-            qDebug() << "      " << QCoreApplication::applicationName().toStdString().c_str() << "/dev/serialX udpPort" ;
-            return 20;
-        }
-    }else{
-         qDebug() << "Usage:";
-         qDebug() << "      " << QCoreApplication::applicationName().toStdString().c_str() << "/dev/serialX udpPort" ;
-         return 10;
-        }
-    return 0;
-}
 
 void SerialSvc::closeSerialPort()
 {
@@ -131,37 +102,113 @@ void SerialSvc::startTime()
 
 SerialSvc::SerialSvc(uint UDPport, QString TTYname, QObject *parent)
     :QSerialPort(parent)
+    ,errorOpens(false)
     ,timer(new QTimer(parent))
     ,udpSocket(new QUdpSocket(parent))
     ,counter(0)
     ,maxtime(5)
+
 {
     portUDP = UDPport;
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimer()));
     connect(this, SIGNAL(onCompleted(QString)), this, SLOT(doEncript(QString)));
     connect(this, SIGNAL(onCompleted(QString)), this, SLOT(startTime()));
-    udpSocket->bind(portUDP, QUdpSocket::ShareAddress);
-    connect(udpSocket, SIGNAL(readyRead()), this,SLOT(doReadUDP()));
-    openSerialPort(TTYname);
+    errorOpens = ! udpSocket->bind(portUDP, QUdpSocket::ShareAddress);
+    if (!errorOpens)
+        connect(udpSocket, SIGNAL(readyRead()), this,SLOT(doReadUDP()));
+    else
+        qDebug() << "Error bind UDP port:" << UDPport;
+    errorOpens = errorOpens or !openSerialPort(TTYname);
 }
 
-void SerialSvc::openSerialPort(QString TTYname)
+SerialSvc::~SerialSvc()
+{
+    closePorts();
+}
 
+void SerialSvc::closePorts()
+{
+    disconnect();
+    closeSerialPort();
+    udpSocket->disconnectFromHost();
+    udpSocket->close();
+}
+
+bool SerialSvc::openSerialPort(QString TTYname)
 {
     closeSerialPort();
     setPortName(TTYname);
     reads.clear();
-//    setBaudRate(baudRate);
-//    setDataBits(dataBits);
-//    setParity(parity);
-//    setStopBits(stopBits);
-//    setFlowControl(flowControl);
+    //    setBaudRate(baudRate);
+    //    setDataBits(dataBits);
+    //    setParity(parity);
+    //    setStopBits(stopBits);
+    //    setFlowControl(flowControl);
     if (open(QIODevice::ReadOnly)) {
         qDebug() << tr("Connected to serial") << portName();
         startTime();
         connect(this, SIGNAL(readyRead()), this, SLOT(readStr()));
+        return true;
     } else {
-        qDebug() << tr("Error open serial") << errorString();
+        qDebug() << tr("Error open serial") << errorString();       
     }
+    return false;
+}
 
+SerialSvc *pserial;
+bool closeApp = false;
+void sigHunter(int sig)
+{
+    signal(sig, SIG_IGN);
+    pserial->closePorts();
+    pserial->deleteLater();
+    closeApp = true;
+}
+
+int ser2udp(int argc, char** argv){
+    QCoreApplication a(argc, argv);
+    if ((argc>2)){
+        QString portTTY(a.arguments().at(1));
+        QString portUDP(a.arguments().at(2));
+
+        bool ok = false;
+        uint pUDP = portUDP.toUInt(&ok);
+        if (ok){
+           pserial = new SerialSvc(pUDP, portTTY, &a);
+           if (pserial->errorOpens){
+               pserial->closePorts();
+               pserial->deleteLater();
+               a.exit();
+               qDebug() << "Halted";
+               return 30;
+           }
+           // catch ctrl-c to shutdown cleanly
+           signal(SIGINT, sigHunter);
+           signal(SIGHUP, sigHunter);
+           signal(SIGTERM, sigHunter);
+           signal(SIGKILL, sigHunter);
+           for (int i=0; i<=6000; i++){
+               a.processEvents();
+               if (closeApp
+                   || pserial->reads.size() >= 10) {
+                   usleep(300000);
+                   break;
+               }
+               usleep(100000);
+           }
+
+        } else {
+            qDebug() << "Usage:";
+            qDebug() << "      " << a.applicationName().toStdString().c_str() << "/dev/serialX udpPort" ;
+            a.exit();
+            return 20;
+        }
+    }else{
+         qDebug() << "Usage:";
+         qDebug() << "      " << a.applicationName().toStdString().c_str() << "/dev/serialX udpPort" ;
+         a.exit();
+         return 10;
+        }
+    a.exit();
+    return 0;
 }

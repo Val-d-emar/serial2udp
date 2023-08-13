@@ -19,14 +19,16 @@ file(GLOB SOURCES
     src/*.cpp
     )
 
-#set(QT_RESOURCES
-#    res.qrc
-#    )
+file(GLOB QT_RESOURCES
+    *.qrc
+    )
 
 add_library(${PROJECT_NAME}
-    ${HEADERS}
     ${SOURCES}
+    ${QT_RESOURCES}
+    ${HEADERS}
     )
+
 target_include_directories( ${PROJECT_NAME}
     PUBLIC include
 )
