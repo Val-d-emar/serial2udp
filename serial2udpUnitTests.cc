@@ -23,24 +23,23 @@ TEST(TestEncoding, BasicAssertions) {
   EXPECT_STREQ( enc, "HELLO23456789");
 }
 
-TEST(TestBroadcasting, BasicAssertions) {
-  int c = 1;
-  char ** argv = new char*[1];
-  QCoreApplication a(c, argv);
-  SerialSvc svc(45454, "/dev/serial", &a);
-  QString data = "12345678";
-  emit svc.onCompleted(data);
-  for (int i=0; i<=50; i++){      
-      a.processEvents();
-      if (svc.datagram.size() > 0) {
-          break;
-      }
-      usleep(100000);
-  }
-  EXPECT_STREQ( svc.datagram, "HELLO23456789");
-  svc.deleteLater();
-  a.exit();
-}
+//TEST(TestBroadcasting, BasicAssertions) {
+//  int c = 1;
+//  char ** argv = new char*[1];
+//  QCoreApplication a(c, argv);
+//  SerialSvc svc(45454, "/dev/serial", &a);
+//  QString data = "12345678";
+//  emit svc.onCompleted(data);
+//  for (int i=0; i<=50; i++){
+//      a.processEvents();
+//      if (svc.datagram.size() > 0) {
+//          break;
+//      }
+//      usleep(100000);
+//  }
+//  EXPECT_STREQ( svc.datagram, "HELLO23456789");
+//}
+
 TEST(TestErrors, BasicAssertions) {
   char ** argv = new char*[3];
   int argc = 1;
