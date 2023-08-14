@@ -29,15 +29,17 @@ TEST(TestBroadcasting, BasicAssertions) {
   QCoreApplication a(c, argv);
   SerialSvc svc(45454, "/dev/serial", &a);
   QString data = "12345678";
-  for (int i=0; i<=50; i++){
-      emit svc.onCompleted(data);
+  emit svc.onCompleted(data);
+  for (int i=0; i<=50; i++){      
       a.processEvents();
       if (svc.datagram.size() > 0) {
           break;
       }
-      usleep(200000);
+      usleep(100000);
   }
   EXPECT_STREQ( svc.datagram, "HELLO23456789");
+  svc.deleteLater();
+  a.exit();
 }
 TEST(TestErrors, BasicAssertions) {
   char ** argv = new char*[3];
