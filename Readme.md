@@ -33,8 +33,9 @@ Qt - это кроссплатформенный фреймворк для ра�
 Выполните следующие команды в терминале:
 
 ```bash
-sudo apt install build-essential qt5-default qtcreator qtbase5-dev qtbase5-private-dev
-sudo apt install make cmake g++ pkg-config libgl1-mesa-dev libxcb*-dev libfontconfig1-dev libxkbcommon-x11-dev python libgtk-3-dev
+sudo apt update && apt -y install build-essential qtcreator qtbase5-dev qtbase5-private-dev libqt5network5 pkg-config 
+sudo apt -y install make cmake g++ libgl1-mesa-dev libxcb*-dev libfontconfig1-dev libxkbcommon-x11-dev python-is-python3 libgtk-3-dev
+sudo apt -y install libqt5serialport5 libqt5serialport5-dev libqt5network5
 ```
 
 Эта команда установит компилятор C++, фреймворк Qt и среду разработки Qt Creator.
