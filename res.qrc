@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>cmake-single-platform.yml</file>
+        <file>Readme.md</file>
+    </qresource>
+</RCC>
