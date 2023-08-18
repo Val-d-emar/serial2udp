@@ -70,8 +70,8 @@ jobs:
             uname -a
             pwd
             ls -l
-            apt -v install ${{github.workspace}}/serial2udp-*.deb
-            sudo apt -y install ${{github.workspace}}/serial2udp-*.deb
+            apt -v
+            sudo apt -y install ${{github.workspace}}/*/serial2udp-*.deb
 
       - name: Test
         working-directory: /opt/serial2udp
