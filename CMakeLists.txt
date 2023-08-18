@@ -90,8 +90,8 @@ set(CPACK_PACKAGE_NAME "${PROJECT_NAME}-${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
 # Укажите имя программы, имя после установки программы
 set(CPACK_DEBIAN_PACKAGE_NAME "${PROJECT_NAME}")
 # Укажите требуемую зависимость
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "qtbase${QT_VERSION_MAJOR}-dev, qtbase${QT_VERSION_MAJOR}-private-dev, libqt${QT_VERSION_MAJOR}network${QT_VERSION_MAJOR}, libqt5serialport${QT_VERSION_MAJOR}-dev, libc6 (>= 2.34), libdlt2, libtinfo6")
-#set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.1-6), libgcc1 (>= 1:3.4.2-12)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "qtbase${QT_VERSION_MAJOR}-dev, qtbase${QT_VERSION_MAJOR}-private-dev, libqt${QT_VERSION_MAJOR}network${QT_VERSION_MAJOR}, libqt5serialport${QT_VERSION_MAJOR}-dev, libc6, libdlt2, libtinfo6, socat, procps")
+#set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6  (>= 2.34), libgcc1 (>= 1:3.4.2-12)")
 # Установите контактную информацию пакета
 set(CPACK_PACKAGE_CONTACT "noreply@nomail.com")
 # Установите человека обслуживания

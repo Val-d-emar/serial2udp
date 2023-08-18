@@ -57,7 +57,7 @@ jobs:
         path: |
             build/serial2udp-*.deb
 
-  tests:
+  testdeb:
     needs: build
     runs-on: ubuntu-latest
 
